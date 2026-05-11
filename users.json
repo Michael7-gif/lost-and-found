@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1778445043204",
+    "email": "mikelchuks41@gmail.com",
+    "password": "$2b$10$8Ai484ytJVygAFt7YuFzseiSp4NO9yUwyC6/IG2.ns4vL/I6l93aC",
+    "name": "chukwuyem michael",
+    "createdAt": "2026-05-10T20:30:43.204Z"
+  },
+  {
+    "id": "1778524544377",
+    "email": "mikelchuks0@gmail.com",
+    "password": "$2b$10$O2fbRU2.ajXbBMbwKfczdO6Ckc8Fv78CpgtkjmG0ulDpvUQSfr/Ga",
+    "name": "Chukwuyem Nonso",
+    "createdAt": "2026-05-11T18:35:44.377Z"
+  }
+]

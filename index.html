@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FindIt - Lost & Found</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+  </style>
+</head>
+<body>
+<nav>
+  <div class="logo"><span></span> Lost and Found</div>
+  <div style="display:flex;gap:.75rem;align-items:center">
+    <div id="userInfo" style="display:none;display:flex;align-items:center;gap:1rem;margin-right:1rem">
+      <span id="userName" style="font-size:0.9rem;color:var(--muted)"></span>
+      <button class="btn btn-sm" onclick="logout()">Logout</button>
+    </div>
+    <div id="authButtons" style="display:flex;gap:.75rem">
+      <button class="btn btn-outline" onclick="openAuthModal('login')"> Sign Up</button>
+      <button class="btn btn-primary" onclick="openAuthModal('signup')">Login</button>
+    </div>
+    <button class="btn btn-outline" id="reportLostBtn" onclick="openModal('lost')" style="display:none">Report Lost</button>
+    <button class="btn btn-primary" id="reportFoundBtn" onclick="openModal('found')" style="display:none">Report Found</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1> Lost Something? Found Something?</h1>
+  <p>Reuniting people with their belongings, one item at a time.</p>
+  <div class="hero-search">
+    <input type="text" id="searchInput" placeholder="Search by item, location…" oninput="renderCards()" />
+    <button onclick="renderCards()">Search</button>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num" id="totalItems">0</div><div class="stat-label">Items Posted</div></div>
+  <div class="stat"><div class="stat-num" id="lostCount">0</div><div class="stat-label">Lost</div></div>
+  <div class="stat"><div class="stat-num" id="foundCount">0</div><div class="stat-label">Found</div></div>
+  <div class="stat"><div class="stat-num" id="resolvedCount">0</div><div class="stat-label">Reunited</div></div>
+</div>
+
+<div class="main">
+  <div class="toolbar">
+    <div class="filter-tabs">
+      <button class="tab active-all" id="tab-all" onclick="setFilter('all')">All Items</button>
+      <button class="tab" id="tab-lost" onclick="setFilter('lost')">Lost</button>
+      <button class="tab" id="tab-found" onclick="setFilter('found')">Found</button>
+    </div>
+    <div style="font-size:.88rem;color:var(--muted)" id="resultCount"></div>
+  </div>
+  <div class="grid" id="itemGrid"></div>
+</div>
+
+<!-- Authentication Modal -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <h2 id="authTitle">Login</h2>
+    <div class="form-group"><label>Email *</label><input type="email" id="authEmail" placeholder="your@email.com" /></div>
+    <div class="form-group"><label>Password *</label><input type="password" id="authPassword" placeholder="Enter password" /></div>
+    <div class="form-group" id="nameGroup" style="display:none"><label>Full Name *</label><input type="text" id="authName" placeholder="Your name" /></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeAuthModal()">Cancel</button>
+      <button class="btn btn-primary" id="authSubmitBtn" onclick="submitAuth()">Login</button>
+    </div>
+    <div style="text-align:center;margin-top:1rem;font-size:0.88rem;color:var(--muted)">
+      <span id="authToggleText">Don't have an account? <a href="#" onclick="toggleAuthMode(event)">Sign up</a></span>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="reportModal">
+  <div class="modal">
+    <h2>📝 Report an Item</h2>
+    <div class="type-toggle">
+      <button class="type-btn sel-lost" id="typeLost" onclick="setType('lost')">🔴 Lost</button>
+      <button class="type-btn" id="typeFound" onclick="setType('found')">🟢 Found</button>
+    </div>
+    <div class="form-group"><label>Item Name *</label><input type="text" id="itemName" placeholder="e.g. Blue backpack, iPhone 14…" /></div>
+    <div class="form-group"><label>Category</label>
+      <select id="itemCategory">
+        <option value="electronics">📱 Electronics</option>
+        <option value="clothing">👕 Clothing & Accessories</option>
+        <option value="bag">🎒 Bags & Luggage</option>
+        <option value="keys">🔑 Keys & Cards</option>
+        <option value="jewelry">💍 Jewelry</option>
+        <option value="documents">📄 Documents & IDs</option>
+        <option value="pets">🐾 Pets</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Location *</label><input type="text" id="itemLocation" placeholder="Where it was lost/found…" /></div>
+    <div class="form-group"><label>Date</label><input type="date" id="itemDate" /></div>
+    <div class="form-group"><label>Description</label><textarea id="itemDesc" placeholder="Color, brand, distinguishing features…"></textarea></div>
+    <div class="form-group" id="imageGroup">
+      <label id="imageLabel">Upload Image (Optional)</label>
+      <input type="file" id="itemImage" accept="image/*" />
+      <div id="imagePreview" style="margin-top:0.5rem;display:none">
+        <img id="previewImg" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:cover">
+      </div>
+    </div>
+    <div class="form-group"><label>Your Contact (Email or Phone) *</label><input type="text" id="itemContact" placeholder="so people can reach you" /></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitItem()">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="contactModal">
+  <div class="modal">
+    <h2 id="contactTitle">Contact Info</h2>
+    <div class="contact-info" id="contactBody"></div>
+    <div id="contactImage" style="margin-top:1rem;display:none">
+      <img id="contactImg" style="width:100%;max-height:300px;border-radius:8px;object-fit:cover">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="document.getElementById('contactModal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/script.js"></script>
+</body>
+</html>
