@@ -270,8 +270,7 @@ app.delete('/api/items/:id', authMiddleware, (req, res) => {
     fs.unlinkSync(imagePath);
   }
 }
-      }
-    }
+      
  
     items.splice(itemIndex, 1);
     saveItems(items);
