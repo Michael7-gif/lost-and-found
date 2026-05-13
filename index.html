@@ -20,8 +20,8 @@
       <button class="btn btn-outline" onclick="openAuthModal('login')"> Sign Up</button>
       <button class="btn btn-primary" onclick="openAuthModal('signup')">Login</button>
     </div>
-    <button class="btn btn-outline" id="reportLostBtn" onclick="openModal('lost')" style="display:none">Report Lost</button>
-    <button class="btn btn-primary" id="reportFoundBtn" onclick="openModal('found')" style="display:none">Report Found</button>
+    <button class="btn btn-outline" id="reportLostBtn" onclick="openModal('lost')" style="display:none">Report Lost Items</button>
+    <button class="btn btn-primary" id="reportFoundBtn" onclick="openModal('found')" style="display:none">Report Found Items</button>
   </div>
 </nav>
 
@@ -36,9 +36,9 @@
 
 <div class="stats">
   <div class="stat"><div class="stat-num" id="totalItems">0</div><div class="stat-label">Items Posted</div></div>
-  <div class="stat"><div class="stat-num" id="lostCount">0</div><div class="stat-label">Lost</div></div>
-  <div class="stat"><div class="stat-num" id="foundCount">0</div><div class="stat-label">Found</div></div>
-  <div class="stat"><div class="stat-num" id="resolvedCount">0</div><div class="stat-label">Reunited</div></div>
+  <div class="stat"><div class="stat-num" id="lostCount">0</div><div class="stat-label">Lost Items</div></div>
+  <div class="stat"><div class="stat-num" id="foundCount">0</div><div class="stat-label">Found Items</div></div>
+
 </div>
 
 <div class="main">
@@ -53,7 +53,7 @@
   <div class="grid" id="itemGrid"></div>
 </div>
 
-<!-- Authentication Modal -->
+
 <div class="modal-overlay" id="authModal">
   <div class="modal">
     <h2 id="authTitle">Login</h2>
