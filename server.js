@@ -247,7 +247,9 @@ app.post('/api/items', authMiddleware, upload.single('image'), async (req, res) 
 app.delete('/api/items/:id', authMiddleware, (req, res) => {
   try {
     let items = loadItems();
-    const itemIndex = items.findIndex(i => String(i.id) === req.params.id);
+   const itemIndex = items.findIndex(
+  i => String(i.id).trim() === String(req.params.id).trim()
+);
  
     if (itemIndex === -1) {
       return res.status(404).json({ error: 'Item not found.' });
@@ -261,10 +263,13 @@ app.delete('/api/items/:id', authMiddleware, (req, res) => {
     }
  
     
-    if (item.image) {
-      const imagePath = path.join(__dirname, item.image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+   if (item.image) {
+  const imagePath = path.join(__dirname, item.image.replace('/uploads/', 'uploads/'));
+
+  if (fs.existsSync(imagePath)) {
+    fs.unlinkSync(imagePath);
+  }
+}
       }
     }
  
