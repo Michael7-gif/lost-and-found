@@ -207,7 +207,13 @@ function renderCards() {
   
   document.getElementById('itemGrid').innerHTML = filtered.length ? filtered.map(item => `
     <div class="card">
-      <div class="card-img">${EMOJI[item.category]||'📦'}${item.image ? ' 📸' : ''}</div>
+     <div class="card-img">
+  ${
+    item.image
+      ? `<img src="${item.image}" alt="${item.name}" class="item-image">`
+      : `${EMOJI[item.category] || '📦'}`
+  }
+</div>
       <div class="card-body">
         <span class="badge badge-${item.type}">${item.type==='lost'?'🔴 Lost':'🟢 Found'}</span>
         <h3>${item.name}</h3>
