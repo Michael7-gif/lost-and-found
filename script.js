@@ -97,7 +97,7 @@ async function submitAuth() {
       currentUser = data.user;
       closeAuthModal();
       showUserUI();
-      loadItems();
+      await loadItems();
       showToast('✅ Account created successfully!', 'success');
     } catch (err) {
       showToast('Signup error: ' + err.message, 'error');
@@ -119,7 +119,7 @@ async function submitAuth() {
       currentUser = data.user;
       closeAuthModal();
       showUserUI();
-      loadItems();
+      await loadItems();
       showToast('✅ Logged in successfully!', 'success');
     } catch (err) {
       showToast('Login error: ' + err.message, 'error');
@@ -140,6 +140,7 @@ function logout() {
 
 function setupImagePreview() {
   const imageInput = document.getElementById('itemImage');
+  if (!imageInput) return;
   imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -216,7 +217,8 @@ function setFilter(f) {
 }
 
 function renderCards() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
+  const searchInput = document.getElementById('searchInput');
+const q = searchInput ? searchInput.value.toLowerCase() : '';
   const filtered = items.filter(i => 
     (currentFilter==='all'||i.type===currentFilter) && 
     (!q||i.name.toLowerCase().includes(q)||i.location.toLowerCase().includes(q)||i.desc.toLowerCase().includes(q))
@@ -283,7 +285,8 @@ async function deleteItem(id) {
       renderCards();
       showToast('✅ Item deleted successfully!', 'success');
     } else {
-      showToast('Failed to delete item.', 'error');
+   const error = await res.json();
+showToast(error.error || 'Failed to delete item.', 'error');
     }
   } catch (err) {
     showToast('Error: ' + err.message, 'error');
