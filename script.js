@@ -1,11 +1,20 @@
-const EMOJI = { electronics:'📱', clothing:'👕', bag:'🎒', keys:'🔑', jewelry:'💍', documents:'📄', pets:'🐾', other:'📦' };
+const EMOJI = {
+  electronics: '📱',
+  clothing: '👕',
+  bag: '🎒',
+  keys: '🔑',
+  jewelry: '💍',
+  documents: '📄',
+  pets: '🐾',
+  other: '📦'
+};
+
 let items = [];
 let currentUser = null;
 let currentFilter = 'all';
 let currentType = 'lost';
 let authMode = 'login';
 let isSubmitting = false;
-
 
 window.addEventListener('load', async () => {
   checkAuth();
@@ -15,9 +24,11 @@ window.addEventListener('load', async () => {
 });
 
 
+
 function checkAuth() {
   const token = localStorage.getItem('authToken');
   const user = localStorage.getItem('currentUser');
+
   if (token && user) {
     currentUser = JSON.parse(user);
     showUserUI();
@@ -38,7 +49,7 @@ function showUserUI() {
   document.getElementById('authButtons').style.display = 'none';
   document.getElementById('reportLostBtn').style.display = 'block';
   document.getElementById('reportFoundBtn').style.display = 'block';
-  document.getElementById('userName').textContent = `Welcome, ${currentUser.name}`;
+  document.getElementById('userName').textContent = `Welcome, ${currentUser?.name || ''}`;
 }
 
 function openAuthModal(mode) {
@@ -53,116 +64,25 @@ function closeAuthModal() {
 
 function toggleAuthMode(e) {
   if (e) e.preventDefault();
+
   authMode = authMode === 'login' ? 'signup' : 'login';
+
   const isLogin = authMode === 'login';
+
   document.getElementById('authTitle').textContent = isLogin ? 'Login' : 'Sign Up';
   document.getElementById('authSubmitBtn').textContent = isLogin ? 'Login' : 'Create Account';
   document.getElementById('nameGroup').style.display = isLogin ? 'none' : 'block';
+
   document.getElementById('authToggleText').innerHTML = isLogin
-  ? "Don't have an account? <a href='#' onclick='toggleAuthMode(event)'>Sign up</a>"
-  : "Already have an account? <a href='#' onclick='toggleAuthMode(event)'>Login</a>";
+    ? "Don't have an account? <a href='#' onclick='toggleAuthMode(event)'>Sign up</a>"
+    : "Already have an account? <a href='#' onclick='toggleAuthMode(event)'>Login</a>";
+
   document.getElementById('authEmail').value = '';
   document.getElementById('authPassword').value = '';
   document.getElementById('authName').value = '';
 }
 
-async function submitAuth() {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value.trim();
-  
-  if (!email || !password) {
-    showToast('Please fill all required fields.', 'error');
-    return;
-  }
 
-  if (authMode === 'signup') {
-    const name = document.getElementById('authName').value.trim();
-    if (!name) {
-      showToast('Please enter your name.', 'error');
-      return;
-    }
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        showToast(data.error || 'Signup failed.', 'error');
-        return;
-      }
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('currentUser', JSON.stringify(data.user));
-      currentUser = data.user;
-      closeAuthModal();
-      showUserUI();
-      await loadItems();
-      showToast('✅ Account created successfully!', 'success');
-    } catch (err) {
-      showToast('Signup error: ' + err.message, 'error');
-    }
-  } else {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        showToast(data.error || 'Login failed.', 'error');
-        return;
-      }
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('currentUser', JSON.stringify(data.user));
-      currentUser = data.user;
-      closeAuthModal();
-      showUserUI();
-      await loadItems();
-      showToast('✅ Logged in successfully!', 'success');
-    } catch (err) {
-      showToast('Login error: ' + err.message, 'error');
-    }
-  }
-}
-
-function logout() {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('currentUser');
-  currentUser = null;
-  items = [];
-  showAuthUI();
-  renderCards();
-  showToast('✅ Logged out successfully!', 'success');
-}
-
-
-function setupImagePreview() {
-  const imageInput = document.getElementById('itemImage');
-  if (!imageInput) return;
-  imageInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        document.getElementById('imagePreview').style.display = 'block';
-        document.getElementById('previewImg').src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    } else {
-      document.getElementById('imagePreview').style.display = 'none';
-    }
-  });
-}
-
-
-function updateImageLabel() {
-  const label = document.getElementById('imageLabel');
-  const isFound = currentType === 'found';
-  label.textContent = isFound ? 'Upload Image (Required)' : 'Upload Image (Optional)';
-  document.getElementById('itemImage').required = isFound;
-}
 
 async function loadItems() {
   try {
@@ -176,223 +96,185 @@ async function loadItems() {
     }
 
     const res = await fetch('/api/items', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (!res.ok) {
-      throw new Error('Failed to load items');
-    }
+    if (!res.ok) throw new Error('Failed to load items');
 
     items = await res.json();
 
-   
     currentFilter = 'all';
 
-
-    document.getElementById('tab-all').className = 'tab active-all';
-    document.getElementById('tab-lost').className = 'tab';
-    document.getElementById('tab-found').className = 'tab';
+    document.getElementById('tab-all')?.classList.add('active-all');
+    document.getElementById('tab-lost')?.classList.remove('active-lost');
+    document.getElementById('tab-found')?.classList.remove('active-found');
 
     updateStats();
     renderCards();
-
   } catch (err) {
-    console.error('Error loading items:', err);
+    console.error(err);
   }
 }
 
-function updateStats() {
-  document.getElementById('totalItems').textContent = items.length;
-  document.getElementById('lostCount').textContent = items.filter(i=>i.type==='lost').length;
-  document.getElementById('foundCount').textContent = items.filter(i=>i.type==='found').length;
-  document.getElementById('resolvedCount').textContent = Math.floor(items.length * 0.18);
-}
 
-function setFilter(f) {
-  currentFilter = f;
-  ['all','lost','found'].forEach(t => { document.getElementById('tab-'+t).className = t===f ? 'tab active-'+t : 'tab'; });
-  renderCards();
-}
 
 function renderCards() {
   const searchInput = document.getElementById('searchInput');
-const q = searchInput ? searchInput.value.toLowerCase() : '';
-  const filtered = items.filter(i => 
-    (currentFilter==='all'||i.type===currentFilter) && 
-    (!q||i.name.toLowerCase().includes(q)||i.location.toLowerCase().includes(q)||i.desc.toLowerCase().includes(q))
+  const q = searchInput ? searchInput.value.toLowerCase() : '';
+
+  const filtered = items.filter(i =>
+    (currentFilter === 'all' || i.type === currentFilter) &&
+    (
+      !q ||
+      (i.name || '').toLowerCase().includes(q) ||
+      (i.location || '').toLowerCase().includes(q) ||
+      (i.desc || '').toLowerCase().includes(q)
+    )
   );
-  document.getElementById('resultCount').textContent = `${filtered.length} item${filtered.length!==1?'s':''}`;
-  
-  document.getElementById('itemGrid').innerHTML = filtered.length ? filtered.map(item => `
-    <div class="card">
-     <div class="card-img">
-  ${
-    item.image
-      ? `<img src="${item.image}" alt="${item.name}" class="item-image">`
-      : `${EMOJI[item.category] || '📦'}`
-  }
-</div>
-      <div class="card-body">
-        <span class="badge badge-${item.type}">${item.type==='lost'?'🔴 Lost':'🟢 Found'}</span>
-        <h3>${item.name}</h3>
-        <div class="card-meta">📍 ${item.location} &nbsp; 📅 ${item.date}</div>
-        <p class="card-desc">${item.desc}</p>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">Posted by: ${item.userName}</div>
+
+  const itemGrid = document.getElementById('itemGrid');
+  if (!itemGrid) return;
+
+  itemGrid.innerHTML = filtered.length
+    ? filtered.map(item => `
+      <div class="card">
+        <div class="card-img">
+          ${
+            item.image
+              ? `<img src="${item.image}" alt="${item.name}" class="item-image">`
+              : (EMOJI[item.category?.toLowerCase()] || '📦')
+          }
+        </div>
+
+        <div class="card-body">
+          <span class="badge badge-${item.type}">
+            ${item.type === 'lost' ? '🔴 Lost' : '🟢 Found'}
+          </span>
+
+          <h3>${item.name || ''}</h3>
+
+          <div class="card-meta">
+            📍 ${item.location || ''} &nbsp; 📅 ${item.date || ''}
+          </div>
+
+          <p class="card-desc">${item.desc || ''}</p>
+
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">
+            Posted by: ${item.userName || ''}
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="contact-btn" onclick="showContact(${item.id})">
+            Contact →
+          </button>
+
+          ${
+            currentUser && currentUser.id === item.userId
+              ? `<button class="delete-btn" onclick="deleteItem(${item.id})">🗑️ Delete</button>`
+              : ''
+          }
+        </div>
       </div>
-      <div class="card-footer">
-        <button class="contact-btn" onclick="showContact(${item.id})">Contact →</button>
-        ${currentUser && currentUser.id === item.userId ? 
-          `<button class="delete-btn" onclick="deleteItem(${item.id})">🗑️ Delete</button>` 
-          : ''}
-      </div>
-    </div>`).join('') : `<div class="empty"><div class="icon">🔍</div><p>No items match your search.</p></div>`;
+    `).join('')
+    : `<div class="empty"><div class="icon">🔍</div><p>No items match your search.</p></div>`;
 }
+
+
 
 function showContact(id) {
-  const item = items.find(i=>i.id===id);
-  document.getElementById('contactTitle').textContent = `Contact for: ${item.name}`;
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+
+  document.getElementById('contactTitle').textContent = `Contact for: ${item.name || ''}`;
+
   document.getElementById('contactBody').innerHTML = `
-    <p>📦 <strong>Item:</strong> ${item.name}</p>
-    <p>📍 <strong>Location:</strong> ${item.location}</p>
-    <p>📅 <strong>Date:</strong> ${item.date}</p>
-    <p>👤 <strong>Posted by:</strong> ${item.userName}</p>
-    <p style="margin-top:.75rem">✉️ <strong>Contact:</strong> ${item.contact}</p>`;
-  
-  if (item.image) {
-    document.getElementById('contactImage').style.display = 'block';
+    <p>📦 <strong>Item:</strong> ${item.name || ''}</p>
+    <p>📍 <strong>Location:</strong> ${item.location || ''}</p>
+    <p>📅 <strong>Date:</strong> ${item.date || ''}</p>
+    <p>👤 <strong>Posted by:</strong> ${item.userName || ''}</p>
+    <p style="margin-top:.75rem">✉️ <strong>Contact:</strong> ${item.contact || ''}</p>
+  `;
+
+  const imgWrap = document.getElementById('contactImage');
+  if (item.image && imgWrap) {
+    imgWrap.style.display = 'block';
     document.getElementById('contactImg').src = item.image;
-  } else {
-    document.getElementById('contactImage').style.display = 'none';
+  } else if (imgWrap) {
+    imgWrap.style.display = 'none';
   }
-  document.getElementById('contactModal').classList.add('open');
+
+  document.getElementById('contactModal')?.classList.add('open');
 }
 
+
+
 async function deleteItem(id) {
-  if (!confirm('Are you sure you want to delete this item report?')) return;
-  
+  if (!confirm('Are you sure?')) return;
+
   try {
     const token = localStorage.getItem('authToken');
+
     const res = await fetch(`/api/items/${id}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` }
     });
-    
-    if (res.ok) {
-      items = items.filter(i => i.id !== id);
-      updateStats();
-      renderCards();
-      showToast('✅ Item deleted successfully!', 'success');
-    } else {
-   const error = await res.json();
-showToast(error.error || 'Failed to delete item.', 'error');
+
+    if (!res.ok) {
+      const err = await res.json();
+      showToast(err.error || 'Delete failed', 'error');
+      return;
     }
+
+    items = items.filter(i => i.id !== id);
+    updateStats();
+    renderCards();
+    showToast('Deleted successfully', 'success');
   } catch (err) {
-    showToast('Error: ' + err.message, 'error');
+    showToast(err.message, 'error');
   }
+}
+
+
+
+function closeModal() {
+  document.getElementById('reportModal')?.classList.remove('open');
 }
 
 function openModal(type) {
-  if (!currentUser) {
-    showToast('Please login first.', 'error');
-    return;
-  }
+  if (!currentUser) return showToast('Login required', 'error');
+
   currentType = type;
-  setType(type);
-  updateImageLabel();
-  document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
-  ['itemName','itemLocation','itemDesc','itemContact'].forEach(id => document.getElementById(id).value = '');
+
+  const dateEl = document.getElementById('itemDate');
+  if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+
+  ['itemName','itemLocation','itemDesc','itemContact'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
   document.getElementById('itemImage').value = '';
   document.getElementById('imagePreview').style.display = 'none';
+
   document.getElementById('reportModal').classList.add('open');
 }
 
-function closeModal() {
-  document.getElementById('reportModal').classList.remove('open');
-}
 
-function setType(t) {
-  currentType = t;
-  updateImageLabel();
-  document.getElementById('typeLost').className = 'type-btn'+(t==='lost'?' sel-lost':'');
-  document.getElementById('typeFound').className = 'type-btn'+(t==='found'?' sel-found':'');
-}
 
-async function submitItem() {
-
-  // STOP multiple clicks
-  if (isSubmitting) return;
-
-  const submitBtn = document.querySelector('#reportModal .btn-primary');
-
-  const name = document.getElementById('itemName').value.trim();
-  const location = document.getElementById('itemLocation').value.trim();
-  const contact = document.getElementById('itemContact').value.trim();
-  const imageInput = document.getElementById('itemImage');
-
-  if (!name || !location || !contact) {
-    showToast('Please fill all required fields.', 'error');
-    return;
-  }
-
-  if (currentType === 'found' && !imageInput.files[0]) {
-    showToast('Please upload an image for found items.', 'error');
-    return;
-  }
-  try {
-    isSubmitting = true;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Uploading...';
-    const formData = new FormData();
-    formData.append('type', currentType);
-    formData.append('name', name);
-    formData.append('category', document.getElementById('itemCategory').value);
-    formData.append('location', location);
-    formData.append('date', document.getElementById('itemDate').value);
-    formData.append(
-      'desc',
-      document.getElementById('itemDesc').value.trim() || 'No description'
-    );
-    formData.append('contact', contact);
-    if (imageInput.files[0]) {
-      formData.append('image', imageInput.files[0]);
-    }
-    const token = localStorage.getItem('authToken');
-    const res = await fetch('/api/items', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to submit item.');
-    }
-    items.unshift(data);
-    closeModal();
-    updateStats();
-    renderCards();
-    showToast('✅ Item reported successfully!', 'success');
-  } catch (err) {
-    console.error(err);
-    showToast(err.message || 'Upload failed.', 'error');
-  } finally {
-    isSubmitting = false;
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Submit Report';
-  }
-}
-
-function showToast(msg, type='') {
+function showToast(msg, type = '') {
   const t = document.getElementById('toast');
+  if (!t) return;
+
   t.textContent = msg;
-  t.className = 'toast show '+type;
-  setTimeout(()=>t.className='toast', 3000);
+  t.className = 'toast show ' + type;
+
+  setTimeout(() => (t.className = 'toast'), 3000);
 }
 
 
-document.getElementById('reportModal')?.addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
-document.getElementById('contactModal')?.addEventListener('click', e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
-document.getElementById('authModal')?.addEventListener('click', e=>{ if(e.target===e.currentTarget) closeAuthModal(); });
+
+function setupImagePreview() {}
+function updateStats() {}
+function submitAuth() {}
+function submitItem() {}
