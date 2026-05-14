@@ -812,3 +812,7 @@ nav {
   object-fit:cover;
   display:block;
 }
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
