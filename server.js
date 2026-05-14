@@ -146,6 +146,10 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+
     const users = loadUsers();
     const user = users.find(u => u.email === email);
 
@@ -163,7 +167,7 @@ app.post('/api/auth/login', async (req, res) => {
         name: user.name
       }
     });
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: 'Login failed' });
   }
 });
@@ -190,7 +194,7 @@ app.get('/api/items', authMiddleware, (req, res) => {
     }
 
     res.json(items);
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: 'Failed to fetch items' });
   }
 });
@@ -267,7 +271,7 @@ app.delete('/api/items/:id', authMiddleware, (req, res) => {
     saveItems(items);
 
     res.json({ success: true });
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: 'Delete failed' });
   }
 });
