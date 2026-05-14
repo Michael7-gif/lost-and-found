@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FindIt - Lost & Found</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-  </style>
 </head>
 <body>
 <nav>
@@ -17,8 +15,8 @@
       <button class="btn btn-sm" onclick="logout()">Logout</button>
     </div>
     <div id="authButtons" style="display:flex;gap:.75rem">
-      <button class="btn btn-outline" onclick="openAuthModal('login')"> Sign Up</button>
-      <button class="btn btn-primary" onclick="openAuthModal('signup')">Login</button>
+      <button class="btn btn-outline" onclick="openAuthModal('signup')"> Sign Up</button>
+      <button class="btn btn-primary" onclick="openAuthModal('login')">Login</button>
     </div>
     <button class="btn btn-outline" id="reportLostBtn" onclick="openModal('lost')" style="display:none">Report Lost Items</button>
     <button class="btn btn-primary" id="reportFoundBtn" onclick="openModal('found')" style="display:none">Report Found Items</button>
@@ -38,7 +36,6 @@
   <div class="stat"><div class="stat-num" id="totalItems">0</div><div class="stat-label">Items Posted</div></div>
   <div class="stat"><div class="stat-num" id="lostCount">0</div><div class="stat-label">Lost Items</div></div>
   <div class="stat"><div class="stat-num" id="foundCount">0</div><div class="stat-label">Found Items</div></div>
-
 </div>
 
 <div class="main">
@@ -96,7 +93,7 @@
     <div class="form-group"><label>Description</label><textarea id="itemDesc" placeholder="Color, brand, distinguishing features…"></textarea></div>
     <div class="form-group" id="imageGroup">
       <label id="imageLabel">Upload Image (Optional)</label>
-      <input type="file" id="itemImage" accept="image/*" />
+      <input type="file" id="itemImage" accept="image/*" onchange="previewImage()" />
       <div id="imagePreview" style="margin-top:0.5rem;display:none">
         <img id="previewImg" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:cover">
       </div>
@@ -125,6 +122,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="/script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
