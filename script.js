@@ -4,12 +4,14 @@ let currentUser = null;
 let currentFilter = 'all';
 let currentType = 'lost';
 let authMode = 'login';
+let isSubmitting = false;
 
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   checkAuth();
-  loadItems();
+  await loadItems();
   setupImagePreview();
+  renderCards();
 });
 
 
@@ -162,26 +164,42 @@ function updateImageLabel() {
 }
 
 async function loadItems() {
-  if (!currentUser) {
-    items = [];
-    updateStats();
-    renderCards();
-    return;
-  }
-
   try {
     const token = localStorage.getItem('authToken');
-    const res = await fetch('/api/items', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (res.ok) {
-      items = await res.json();
+
+    if (!token) {
+      items = [];
+      updateStats();
+      renderCards();
+      return;
     }
+
+    const res = await fetch('/api/items', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to load items');
+    }
+
+    items = await res.json();
+
+   
+    currentFilter = 'all';
+
+
+    document.getElementById('tab-all').className = 'tab active-all';
+    document.getElementById('tab-lost').className = 'tab';
+    document.getElementById('tab-found').className = 'tab';
+
+    updateStats();
+    renderCards();
+
   } catch (err) {
     console.error('Error loading items:', err);
   }
-  updateStats();
-  renderCards();
 }
 
 function updateStats() {
@@ -299,12 +317,18 @@ function setType(t) {
 }
 
 async function submitItem() {
+
+  // STOP multiple clicks
+  if (isSubmitting) return;
+
+  const submitBtn = document.querySelector('#reportModal .btn-primary');
+
   const name = document.getElementById('itemName').value.trim();
   const location = document.getElementById('itemLocation').value.trim();
   const contact = document.getElementById('itemContact').value.trim();
   const imageInput = document.getElementById('itemImage');
-  
-  if (!name||!location||!contact) {
+
+  if (!name || !location || !contact) {
     showToast('Please fill all required fields.', 'error');
     return;
   }
@@ -313,42 +337,48 @@ async function submitItem() {
     showToast('Please upload an image for found items.', 'error');
     return;
   }
-
   try {
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading...';
     const formData = new FormData();
     formData.append('type', currentType);
     formData.append('name', name);
     formData.append('category', document.getElementById('itemCategory').value);
     formData.append('location', location);
     formData.append('date', document.getElementById('itemDate').value);
-    formData.append('desc', document.getElementById('itemDesc').value.trim() || 'No description');
+    formData.append(
+      'desc',
+      document.getElementById('itemDesc').value.trim() || 'No description'
+    );
     formData.append('contact', contact);
-    
     if (imageInput.files[0]) {
       formData.append('image', imageInput.files[0]);
     }
-
     const token = localStorage.getItem('authToken');
     const res = await fetch('/api/items', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       body: formData
     });
-
+    const data = await res.json();
     if (!res.ok) {
-      const error = await res.json();
-      showToast(error.error || 'Failed to submit item.', 'error');
-      return;
+      throw new Error(data.error || 'Failed to submit item.');
     }
-
-    const newItem = await res.json();
-    items.unshift(newItem);
+    items.unshift(data);
     closeModal();
     updateStats();
     renderCards();
     showToast('✅ Item reported successfully!', 'success');
   } catch (err) {
-    showToast('Error: ' + err.message, 'error');
+    console.error(err);
+    showToast(err.message || 'Upload failed.', 'error');
+  } finally {
+    isSubmitting = false;
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Report';
   }
 }
 
